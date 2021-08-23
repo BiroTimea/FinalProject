@@ -1,12 +1,15 @@
 package com.sda.onlineAuction.controller;
 
+import com.sda.onlineAuction.dto.BidDto;
 import com.sda.onlineAuction.dto.ProductDto;
 import com.sda.onlineAuction.dto.UserDto;
+import com.sda.onlineAuction.service.BidService;
 import com.sda.onlineAuction.service.ProductService;
 import com.sda.onlineAuction.service.UserService;
 import com.sda.onlineAuction.validator.ProductDtoValidator;
 import com.sda.onlineAuction.validator.UserDtoValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,6 +35,9 @@ public class HomeController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private BidService bidService;
 
     @GetMapping("/addItem")
     public String getAddItemPage(Model model) {
@@ -64,9 +70,18 @@ public class HomeController {
         if(!optionalProductDto.isPresent()){
             return "errorPage";
         }
+        BidDto bidDto = new BidDto();
+        model.addAttribute("bid", bidDto);
         ProductDto productDto = optionalProductDto.get();
         model.addAttribute("product", productDto);
         return "viewItem";
+    }
+
+    @PostMapping("/item/{productId}")
+    public String postProductPage(BidDto bidDto, BindingResult bindingResult, @PathVariable(value = "productId")String productId, Authentication authentication){
+        System.out.println("We got the bid with value: " + bidDto.getValue() + " for the product with ID : " + productId);
+        bidService.placeBid(bidDto, productId, authentication.getName());
+        return "redirect:/item/" + productId;
     }
 
     @GetMapping("/registration")
