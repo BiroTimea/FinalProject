@@ -24,10 +24,13 @@ public class Product {
     private Category category;
     private LocalDateTime endDateTime;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User winner;
+
     @Lob
     private byte[] image;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "product")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "product", fetch = FetchType.EAGER)
     private List<Bid> bidsList;
 
 }

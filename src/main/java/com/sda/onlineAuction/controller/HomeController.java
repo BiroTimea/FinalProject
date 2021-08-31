@@ -6,6 +6,7 @@ import com.sda.onlineAuction.dto.UserDto;
 import com.sda.onlineAuction.service.BidService;
 import com.sda.onlineAuction.service.ProductService;
 import com.sda.onlineAuction.service.UserService;
+import com.sda.onlineAuction.validator.BidDtoValidator;
 import com.sda.onlineAuction.validator.ProductDtoValidator;
 import com.sda.onlineAuction.validator.UserDtoValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class HomeController {
     @Autowired
     private BidService bidService;
 
+    @Autowired
+    private BidDtoValidator bidDtoValidator;
+
     @GetMapping("/addItem")
     public String getAddItemPage(Model model) {
         System.out.println("Add Item page is here.");
@@ -58,28 +62,45 @@ public class HomeController {
     }
 
     @GetMapping({"/home", "/"})
-    public String getHomePage(Model model){
-        List<ProductDto> productDtoList = productService.getAllProductDtos();
+    public String getHomePage(Model model, Authentication authentication){
+        List<ProductDto> productDtoList = productService.getAllActiveProductDtos(authentication.getName());
         model.addAttribute("products", productDtoList);
         return "home";
     }
 
+    @GetMapping("/myProducts")
+    public String getMyProductsPage(Model model, Authentication authentication){
+        List<ProductDto> productDtoList = productService.getProductDtosFor(authentication.getName());
+        model.addAttribute("products", productDtoList);
+        return "myProducts";
+    }
+
     @GetMapping("/item/{productId}")
-    public String getProductPage(@PathVariable(value = "productId") String productId, Model model){
-        Optional<ProductDto> optionalProductDto = productService.getProductDtoById(productId);
-        if(!optionalProductDto.isPresent()){
+    public String getProductPage(@PathVariable(value = "productId") String productId, Model model, Authentication authentication){
+        Optional<ProductDto> optionalProductDtoFound = productService.getProductDtoById(productId, authentication.getName());
+        if(!optionalProductDtoFound.isPresent()){
             return "errorPage";
         }
         BidDto bidDto = new BidDto();
-        model.addAttribute("bid", bidDto);
-        ProductDto productDto = optionalProductDto.get();
+        model.addAttribute("bidDto", bidDto);
+        ProductDto productDto = optionalProductDtoFound.get();
         model.addAttribute("product", productDto);
         return "viewItem";
     }
 
     @PostMapping("/item/{productId}")
-    public String postProductPage(BidDto bidDto, BindingResult bindingResult, @PathVariable(value = "productId")String productId, Authentication authentication){
+    public String postProductPage(BidDto bidDto, BindingResult bindingResult, @PathVariable(value = "productId") String productId,
+                                  Authentication authentication, Model model){
         System.out.println("We got the bid with value: " + bidDto.getValue() + " for the product with ID : " + productId);
+        bidDtoValidator.validate(bidDto, bindingResult, productId);
+        if(bindingResult.hasErrors()){
+            Optional<ProductDto> optionalProductDto = productService.getProductDtoById(productId, authentication.getName());
+            if(!optionalProductDto.isPresent()){
+                return "errorPage";
+            }
+            model.addAttribute("product", optionalProductDto.get());
+            return "viewItem";
+        }
         bidService.placeBid(bidDto, productId, authentication.getName());
         return "redirect:/item/" + productId;
     }

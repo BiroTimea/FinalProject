@@ -1,75 +1,104 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/css/bootstrap.min.css}"/>
+
+
+    <!-- Additional CSS Files -->
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/css/fontawesome.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/css/tooplate-main.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/css/owl.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/css/custom.css}"/>
+
     <meta charset="UTF-8">
-    <title>Add Item</title>
+    <title>Title</title>
 </head>
 <body>
+    <div class="featured container no-gutter">
 
-<form class="form-horizontal" th:object="${productDto}" th:action="@{/addItem}" method="post" enctype="multipart/form-data">
-    <fieldset>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
 
-        <!-- Form Name -->
-        <legend>Products</legend>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item ">
+                        <a sec:authorize="isAuthenticated() "class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item ">
+                        <a sec:authorize="hasRole('ROLE_BIDDER')" class="nav-link" href="/myProducts">My Products</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a sec:authorize="hasRole('ROLE_SELLER')"  class="nav-link" href="/addItem">Add Item</a>
+                    </li>
+                    <li class="nav-item">
+                        <a sec:authorize="isAnonymous()" class="nav-link" href="/registration">Registration</a>
+                    </li>
+                    <li class="nav-item">
+                        <a  sec:authorize="isAnonymous()" class="nav-link " href="/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a sec:authorize="isAuthenticated()" class="nav-link " href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
 
-        <!-- Product name area-->
-        <div class="form-group">
-            <label class="col-md-4 control-label" for="product_name">Product name</label>
-            <div class="col-md-4">
-                <input id="product_name" th:field="*{name}" placeholder="Product name" class="form-control input-md" required="" type="text">
+        <form class="form-horizontal" method="post" th:object="${productDto}" th:action="@{/addItem}" enctype="multipart/form-data">
+            <!-- Product name area-->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="product_name">Product name</label>
+                <div class="">
+                    <input class="form-control" id="product_name" th:field="*{name}" placeholder="Product name" required="" type="text">
+                </div>
             </div>
-        </div>
-        <!-- Product description area-->
-        <div class="form-group">
-            <label class="col-md-4 control-label" for="product_description">Product description</label>
-            <div class="col-md-4">
-                <input id="product_description" th:field="*{description}" placeholder="Product description" class="form-control input-md" required="" type="text">
+            <!-- Product description area-->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="product_description">Product description</label>
+                <div class="">
+                    <input class="form-control" id="product_description" th:field="*{description}" name="description" placeholder="Product description" required="" type="text">
+                </div>
             </div>
-        </div>
-        <!-- Product starting price area-->
-        <div class="form-group">
-            <label class="col-md-4 control-label" for="product_starting_price">Product starting price</label>
-            <div class="col-md-4">
-                <input id="product_starting_price" th:field="*{startBiddingPrice}" placeholder="Product starting price" class="form-control input-md" required="" type="number">
+            <!-- Product starting price area-->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="product_starting_price">Product starting price</label>
+                <div class="">
+                    <input class="form-control" id="product_starting_price" th:field="*{startBiddingPrice}" placeholder="Product starting price" required="" type="number">
+                </div>
+                <label th:if="${#fields.hasErrors('startBiddingPrice')}" th:class="'error'" th:errors="*{startBiddingPrice}" class="col-lg-4 control-label" style="color:red;" ></label>
             </div>
-            <label th:if="${#fields.hasErrors('startBiddingPrice')}" th:class="'error'" th:errors="*{startBiddingPrice}" class="col-lg-4 control-label" style="color:red;" ></label>
-        </div>
-        <!-- Product category area -->
-        <div class="form-group">
-            <label class="col-md-4 control-label" for="product_category">Product category</label>
-            <div class="col-md-4">
-                <select name="color" id = "product_category" th:field = "*{category}">
-                    <option th:each="colorOpt : ${T(com.sda.onlineAuction.model.Category).values()}"
-                            th:value="${colorOpt.name()}" th:text="${colorOpt.name()}"></option>
-                </select>
+            <!-- Product category area -->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="product_category">Product category</label>
+                <div class="">
+                    <select class="form-control" id = "product_category" th:field = "*{category}">
+                        <option th:each="colorOpt : ${T(com.sda.onlineAuction.model.Category).values()}"
+                                th:value="${colorOpt.name()}" th:text="${colorOpt.name()}">
+                        </option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <!-- Auction end date and time area -->
-        <div class="form-group">
-            <label class="col-md-4 control-label" for="auction_end_time">Auction ending date and time</label>
-            <div class="col-md-4">
-                <input id="auction_end_time" th:field="*{endDateTime}" placeholder="Auction ending date and time" class="form-control input-md" required="" type="datetime-local">
+            <!-- Auction end date and time area -->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="auction_end_time">Auction ending date and time</label>
+                <div class="">
+                    <input class="form-control" id="auction_end_time" th:field="*{endDateTime}" placeholder="Auction ending date and time" required="" type="datetime-local">
+                </div>
             </div>
-        </div>
-        <!-- Product image area -->
-        <div class="form-group">
-            <label class="col-md-4 control-label" for="product_image">Product image</label>
-            <div class="col-md-4">
-                <input id="product_image" name="productImage" accept="image/png, image/jpg, image/jpeg" placeholder="Product image" class="form-control input-md" required="" type="file">
+            <!-- Product image area -->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="product_image">Product image</label>
+                <div class="">
+                    <input class="form-control" id="product_image" name="productImage" accept="image/png, image/jpg, image/jpeg" placeholder="Product image" required="" type="file">
+                </div>
             </div>
-        </div>
-        <!-- Button -->
-        <div class="form-group">
-            <label class="col-md-4 control-label" for="singlebutton"></label>
-            <div class="col-md-4">
-                <button id="singlebutton" name="singlebutton" type="submit" class="btn btn-primary">Add Product</button>
+            <!-- Button -->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="singlebutton"></label>
+                <div class="">
+                    <button id="singlebutton" name="singlebutton" type="submit" class="btn btn-primary">Add Product</button>
+                </div>
             </div>
-        </div>
-    </fieldset>
-</form>
-
+        </form>
+    </div>
 </body>
 </html>

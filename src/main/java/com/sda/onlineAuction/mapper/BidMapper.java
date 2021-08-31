@@ -32,6 +32,7 @@ public class BidMapper {
         Bid bid = new Bid();
         bid.setValue(Integer.valueOf(bidDto.getValue()));
         bid.setProduct(optionalProduct.get());
+        bid.setUser(optionalUser.get());
         return bid;
     }
 }
